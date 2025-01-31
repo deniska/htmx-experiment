@@ -43,7 +43,7 @@ class Item(Base):
         return h.div(
             {'class': ['item', *iif(self.done, ['checked'])]},
             h.form(
-                h.input({'name': 'todo', 'id': 'todoinput', 'value': self.name}),
+                h.input({'name': 'todo', 'id': 'todoinput', 'autocomplete': 'off', 'value': self.name}),
                 h.button(
                     {'hx-post': f'/todo/{self.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
                     'Сохранить',
@@ -70,7 +70,7 @@ def index(session):
                     *(item.view() for item in items),
                 ),
                 h.form(
-                    h.input({'name': 'todo', 'id': 'todoinput'}),
+                    h.input({'name': 'todo', 'id': 'todoinput', 'autocomplete': 'off'}),
                     h.button(
                         {
                             'hx-post': '/todo',
