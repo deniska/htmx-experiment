@@ -32,11 +32,11 @@ class Item(Base):
             ),
             h.button(
                 {'hx-get': f'/todo/{self.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
-                'Изменить'
+                'Edit'
             ),
             h.button(
                 {'hx-delete': f'/todo/{self.id}', 'hx-swap': 'delete', 'hx-target': 'closest .item'},
-                'Удалить',
+                'Delete',
             ),
         )
 
@@ -44,10 +44,10 @@ class Item(Base):
         return h.div(
             {'class': ['item', *iif(self.done, ['checked'])]},
             h.form(
-                h.input({'name': 'todo', 'id': 'todoinput', 'autocomplete': 'off', 'value': self.name}),
+                h.input({'name': 'todo', 'autocomplete': 'off', 'value': self.name}),
                 h.button(
                     {'hx-post': f'/todo/{self.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
-                    'Сохранить',
+                    'Save',
                 ),
             )
         )
@@ -65,7 +65,7 @@ def index(session):
             h.script({'src': 'https://unpkg.com/htmx.org@2.0.4'}),
             h.div(
                 {'class': 'content'},
-                h.h1('Тудушки'),
+                h.h1('Todo'),
                 h.div(
                     {'class': 'todos'},
                     *(item.view() for item in items),
@@ -79,7 +79,7 @@ def index(session):
                             'hx-swap': 'beforeend',
                             'hx-on::after-request': "todoinput.value=''",
                         },
-                        'Добавить',
+                        'Add',
                     ),
                 ),
             ),
@@ -134,6 +134,8 @@ body {
 .item {
     background: #d5bdaf;
     margin: 5px;
+    display: flex;
+    align-items: center;
 }
 .item.checked {
     background: #e3d5ca;
@@ -143,14 +145,19 @@ body {
 }
 .item label {
     display: inline-block;
-    width: 55%;
+    flex-grow: 1;
+}
+.content form {
+    width: 100%;
+    display: flex;
+    align-items: center;
 }
 form input {
     margin: 5px;
-    width: 70%;
+    flex-grow: 1;
 }
 '''
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
-    app.run(port=1234, reload=True)
+    app.run(port=1234, debug=True, reloader=True)
