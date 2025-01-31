@@ -25,7 +25,8 @@ class Item(Base):
                     'type': 'checkbox',
                     **iif(self.done, {'checked': ''}),
                     'hx-post': f'/todo/{self.id}/set',
-                    'hx-swap': 'none',
+                    'hx-swap': 'outerHTML',
+                    'hx-target': 'closest .item',
                 }),
                 self.name,
             ),
@@ -102,6 +103,7 @@ def set_todo(id, session):
     item = session.scalar(select(Item).where(Item.id == id))
     item.done = bool(bottle.request.forms.checked)
     session.commit()
+    return item.view()
 
 @app.post('/todo/<id:int>/edit')
 def post_edit_todo(id, session):
