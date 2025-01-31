@@ -62,7 +62,7 @@ class Helper:
         return HTMLElement(self.tag, attrs, content, self.self_closing)
 
 def _render(renderable):
-    parts = []
+    parts = ['<!DOCTYPE html>\n']
     renderable.render(parts)
     return ''.join(parts)
 
