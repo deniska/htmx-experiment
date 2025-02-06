@@ -16,41 +16,41 @@ class Item(Base):
     name: Mapped[str]
     done: Mapped[bool]
 
-    def view(self):
-        return h.div(
-            {'class': ['item', *iif(self.done, ['checked'])]},
-            h.label(
-                h.input({
-                    'name': 'checked',
-                    'type': 'checkbox',
-                    **iif(self.done, {'checked': ''}),
-                    'hx-post': f'/todo/{self.id}/set',
-                    'hx-swap': 'outerHTML',
-                    'hx-target': 'closest .item',
-                }),
-                self.name,
-            ),
-            h.button(
-                {'hx-get': f'/todo/{self.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
-                'Edit'
-            ),
-            h.button(
-                {'hx-delete': f'/todo/{self.id}', 'hx-swap': 'delete', 'hx-target': 'closest .item'},
-                'Delete',
-            ),
-        )
+def item_view(item):
+    return h.div(
+        {'class': ['item', *iif(item.done, ['checked'])]},
+        h.label(
+            h.input({
+                'name': 'checked',
+                'type': 'checkbox',
+                **iif(item.done, {'checked': ''}),
+                'hx-post': f'/todo/{item.id}/set',
+                'hx-swap': 'outerHTML',
+                'hx-target': 'closest .item',
+            }),
+            item.name,
+        ),
+        h.button(
+            {'hx-get': f'/todo/{item.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
+            'Edit'
+        ),
+        h.button(
+            {'hx-delete': f'/todo/{item.id}', 'hx-swap': 'delete', 'hx-target': 'closest .item'},
+            'Delete',
+        ),
+    )
 
-    def edit_view(self):
-        return h.div(
-            {'class': ['item', *iif(self.done, ['checked'])]},
-            h.form(
-                h.input({'name': 'todo', 'autocomplete': 'off', 'value': self.name}),
-                h.button(
-                    {'hx-post': f'/todo/{self.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
-                    'Save',
-                ),
-            )
+def item_edit_view(item):
+    return h.div(
+        {'class': ['item', *iif(item.done, ['checked'])]},
+        h.form(
+            h.input({'name': 'todo', 'autocomplete': 'off', 'value': item.name}),
+            h.button(
+                {'hx-post': f'/todo/{item.id}/edit', 'hx-target': 'closest .item', 'hx-swap': 'outerHTML'},
+                'Save',
+            ),
         )
+    )
 
 app = bottle.Bottle()
 app.install(AlcBottle(Session))
@@ -68,7 +68,7 @@ def index(session):
                 h.h1('Todo'),
                 h.div(
                     {'class': 'todos'},
-                    *(item.view() for item in items),
+                    *(item_view(item) for item in items),
                 ),
                 h.form(
                     h.input({'name': 'todo', 'id': 'todoinput', 'autocomplete': 'off'}),
@@ -88,10 +88,10 @@ def index(session):
 
 @app.post('/todo')
 def post_todo(session):
-    todo = Item(name = bottle.request.forms.todo, done=False)
-    session.add(todo)
+    item = Item(name = bottle.request.forms.todo, done=False)
+    session.add(item)
     session.commit()
-    return todo.view()
+    return item_view(item)
 
 @app.delete('/todo/<id:int>')
 def delete_todo(id, session):
@@ -103,19 +103,19 @@ def set_todo(id, session):
     item = session.scalar(select(Item).where(Item.id == id))
     item.done = bool(bottle.request.forms.checked)
     session.commit()
-    return item.view()
+    return item_view(item)
 
 @app.post('/todo/<id:int>/edit')
 def post_edit_todo(id, session):
     item = session.scalar(select(Item).where(Item.id == id))
     item.name = bottle.request.forms.todo
     session.commit()
-    return item.view()
+    return item_view(item)
 
 @app.get('/todo/<id:int>/edit')
 def get_edit_todo(id, session):
     item = session.scalar(select(Item).where(Item.id == id))
-    return item.edit_view()
+    return item_edit_view(item)
 
 def iif(v, q):
     if v:
