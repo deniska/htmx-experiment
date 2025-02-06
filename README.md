@@ -1,3 +1,3 @@
 # htmx todoapp
 
-Эксперимент по архитектуре вьюха { ORM { вьюха } }
+HTMX-based experiment with inline view layer
